@@ -11,7 +11,6 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class HotDealCheckerController {
 	private int uploadLimit;
 
 	@Autowired
-	private HotDealCheckerService hotDealCrawlingService;
+	private HotDealCheckerService hotDealCheckerService;
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -57,30 +56,27 @@ public class HotDealCheckerController {
 	public String getCheckList(Model map) {
 		log.info("---getCheckList----");
 		String keyword = "";
-		List<HotDealKeyword> Keywords = hotDealCrawlingService.getAllKeyword();
+		List<HotDealKeyword> Keywords = null;
 		List<Map<String, Object>> existKeywords = new ArrayList<Map<String, Object>>();
 		
 		boolean isExist = false;
 		try {
+			Keywords = hotDealCheckerService.getAllKeyword();
 			for (HotDealKeyword hotDealKeyword : Keywords) {
 				keyword = hotDealKeyword.getKeywordName();
-				log.info("Url : " + Url + keyword);
 				Document doc = Jsoup.connect(Url + keyword).get();
-				Elements elems = doc.select(target);
-				if(!elems.isEmpty()) {
-					for (Element e : elems.select(timeCss)) {
-						isExist = e.text().contains(":");
-						if(isExist) {
-							break;
-						}
-					}
+				Element elem = doc.selectFirst(target);
+				if(elem != null && elem.selectFirst(timeCss).text().contains(":")) {
+					isExist = true;
 				}
 				Map<String, Object> resultMap = new HashMap<>(); 
 				resultMap.put("keyword_id", hotDealKeyword.getKeywordId());
 				resultMap.put("keyword_name", keyword);
 				resultMap.put("is_exist", isExist);
 				existKeywords.add(resultMap);
+				isExist = false;
 			}
+			log.info("현재 등록 키워드 개수 : " + Keywords.size());
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -106,10 +102,9 @@ public class HotDealCheckerController {
 			if(!receivedCode.equals(confirmCode)) {
 				resultMessage ="틀린 확인코드 입니다.";
 			} else {
-				hotDealCrawlingService.deleteKeyword(Long.parseLong(keywordId));
+				hotDealCheckerService.deleteKeyword(Long.parseLong(keywordId));
 				resultMessage = "삭제를 성공했습니다.";
 			}
-			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -135,18 +130,13 @@ public class HotDealCheckerController {
 				resultMessage =  "키워드는 공란이거나 공백문자로 등록할 수 없습니다.";
 			} else if(!receivedCode.equals(confirmCode)) {
 				resultMessage =  "틀린 확인코드 입니다.";
-			} else if(hotDealCrawlingService.getAllKeywordCount() < 10) {
+			} else if(hotDealCheckerService.getAllKeywordCount() >= uploadLimit) {
 				resultMessage = "키워드는 30개 이상 등록 하실 수 없습니다.";
 			} else {
 				HotDealKeyword hotDealKeyword = new HotDealKeyword();
 				hotDealKeyword.setKeywordName(keywordName);
-				
-				Date date = new Date();
-				SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-				System.out.println(formatter.format(date));
-				
-				hotDealKeyword.setCreateDate(date);
-				hotDealCrawlingService.saveKeyword(hotDealKeyword);
+				hotDealKeyword.setCreateDate(new Date());
+				hotDealCheckerService.saveKeyword(hotDealKeyword);
 				resultMessage = "등록을 성공했습니다.";
 			}
 		} catch (Exception e) {
