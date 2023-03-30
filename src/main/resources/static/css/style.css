@@ -1,0 +1,83 @@
+a { text-decoration: none; color: white; }
+a:visited { text-decoration: none; }
+a:hover { text-decoration: none; color: #0000ff;  }
+a:focus { text-decoration: none; color: #ff0000;  }
+
+.delete-icon:hover { text-decoration: none; color: #0000ff;  }
+.input-icon:hover { text-decoration: none; color: #b3ecff;  }
+
+.top{
+  z-index: 1;
+  background-color: black;
+  height: 130px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.top h1{
+  text-align: center;
+  color : white;
+}
+
+.top span{
+  text-align: center;
+  color : gray;
+  font-size: 20px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  height: 100%; 
+  padding: 130px 15% 0% 15%;
+  box-sizing: border-box;
+}
+
+.grid-item {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: center;
+  padding: 20px	;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  margin: 10px 10px 10px 10px;
+}
+
+.active {
+  color: #ffffff;
+  background-color: #00d700;
+  cursor: pointer;
+}
+
+.deactive {
+  opacity: 0.5;
+  cursor: default;
+  background-color: #ccc;
+}
+
+.addKeywordBox {
+  color: #ffffff;
+  background-color: #0080ff;
+}
+
+#addKeywordName {
+  border: none; 
+  border-bottom: 1px solid black; 
+  width: 80%; 
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+  }
+}

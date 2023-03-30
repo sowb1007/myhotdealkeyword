@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY Hot Deal Keyword</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="js/script.js"></script>
+    <script src="https://kit.fontawesome.com/285b76fbda.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="top">
+        <h1>MY Hot Deal Keyword<br><span th:text="${'  ' + #calendars.format(#calendars.createNow(), 'yyyy년 MMM dd일 HH:mm')}"></span></h1>
+    </div>
+    <div class="grid-container">
+        <th:block th:each = "keyword : ${existKeywords}">
+		 	    <div th:if="${keyword.is_exist == true}" class="grid-item active">
+		 	        <a th:href="@{https://bbs.ruliweb.com/market/board/1020(search_type = subject, search_key = ${keyword.keyword_name})}" th:text="${keyword.keyword_name}"></a>
+		 	        <i class="fa-solid fa-trash-can delete-icon"  th:onclick="deleteKeyword([[${keyword.keyword_id}]])"></i>
+		 	    </div>
+		 	    <div th:if="${keyword.is_exist == false}" class="grid-item deactive">
+		 	        <span th:text="${keyword.keyword_name}"></span>
+		 	        <i class="fa-solid fa-trash-can delete-icon"  th:onclick="deleteKeyword([[${keyword.keyword_id}]])"></i>
+		 	    </div>
+        </th:block>
+       <th:block th:if="${#lists.size(existKeywords) < uploadLimit }">
+		 	    <div class="grid-item addKeywordBox">
+		 	        <input type="text" id="addKeywordName" maxlength="20">
+		 	        <i class="fa-solid fa-square-plus input-icon" onClick="addKeyword()"></i>
+		 	    </div>
+        </th:block>
+        
+        
+	</div>
+</body>
+    <script th:inline="javascript">
+     function deleteKeyword(keywordId) {
+         var confirmCode = prompt('삭제 확인코드를 입력해주세요');
+         
+         if(confirmCode == null){
+        	 return;
+         } else if(!confirmCode){
+        	 alert('확인코드를 입력해주세요');
+         } else {
+	    	 const url = '/deleteKeyword';
+	         var keywordData = {'keywordId' : keywordId, 
+	        		            'confirmCode' : confirmCode }
+	         //삭제 요청
+	         post(url,keywordData)
+	         .then((data) => {
+	        	 alert('삭제 결과 :' + data.resultMessage);
+	             location.reload(true);})
+	         .catch((error) => alert('삭제 결과 :' + error.resultMessage));
+         }
+         location.reload(true);
+	}
+     
+     function addKeyword() {
+    	 const keywordName = document.getElementById('addKeywordName').value;
+    	 if(confirm('키워드 : ' + keywordName + '를 등록하시겠습니까?')){
+	         var confirmCode = prompt('등록 확인코드를 입력해주세요');
+	         if(!confirmCode){
+	        	 alert('확인코드를 입력해주세요');
+	         } else {
+	        	 const url = '/addKeyword';
+		         var keywordData = {'keywordName' : keywordName, 
+		        		            'confirmCode' : confirmCode }
+		         //등록 요청
+		         post(url,keywordData)
+		         .then((data) => { 
+		        	 alert('등록 결과 :' + data.resultMessage);
+				     location.reload(true);})
+		         .catch((error) => alert('등록 결과 :' + error.resultMessage));
+
+	         }
+    	 }
+	} 
+    </script>
+</html>
+
